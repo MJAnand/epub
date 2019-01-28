@@ -1,0 +1,29 @@
+def ePubZip(fileName, path):
+    folder = fileName.replace('.epub', '')
+    if os.path.isfile(path+'/'+folder+'/mimetype'):
+        with open(path+'/'+folder+'/META-INF/container.xml', 'r') as r:
+            filePaths = re.search(r'full-path="([^"]*)/([^"]*).opf"', r.read()).group(1)
+        with zipfile.ZipFile(path+'/'+folder+'.epub', 'w') as myzip:
+            myzip.writestr('mimetype', 'application/epub+zip')
+        with zipfile.ZipFile(path+'/'+folder+'.epub', 'a', mode) as myzip:
+            for base, dirs, files in os.walk(path+'/'+folder+'/META-INF'):
+                for ifile in files:
+                    fn = os.path.join(base, ifile)
+                    myzip.write(fn, os.path.join(base.replace(path+'/'+folder+'/', ''), ifile))
+        with zipfile.ZipFile(path+'/'+folder+'.epub', 'a', mode) as myzip:
+            for base, dirs, files in os.walk(path+'/'+folder+'/'+filePaths):
+                for ifile in files:
+                    fn = os.path.join(base, ifile)
+                    if not fn.endswith('Thumbs.db') and not fn.endswith('debug.log'):
+                        myzip.write(fn, os.path.join(base.replace(path+'/'+folder+'/', ''), ifile))
+    return True
+
+def ePubUnZip(fileName, path):
+    z = zipfile.ZipFile(fileName)
+    for name in z.namelist():
+        output = str(path+'/'+fileName.replace('.epub', ''))
+        z.extract(name, output)
+    z.close()
+    os.remove(path+'/'+fileName)
+    return True
+
